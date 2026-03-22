@@ -1,0 +1,358 @@
+/* ==========================================
+   Root Variables & Reset
+========================================= */
+:root {
+    --theme-color: #1497e4;
+    --theme-color-glow: rgba(20, 151, 228, 0.4);
+    --bg-dark: rgba(15, 15, 20, 0.9);
+    --bg-light: rgba(255, 255, 255, 0.05);
+    --text-main: #ffffff;
+    --text-muted: #a0a0a0;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --success-color: #2ecc71;
+    --error-color: #e74c3c;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+    user-select: none;
+}
+
+/* Make body transparent for FiveM NUI */
+body {
+    background-color: transparent;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* ==========================================
+   Main App Layout
+========================================= */
+#app {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 100%);
+}
+
+.glass-panel {
+    background: var(--bg-dark);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    width: 450px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 20px var(--theme-color-glow);
+    overflow: hidden;
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* ==========================================
+   Header & Info Bar
+========================================= */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.header-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-title i {
+    font-size: 24px;
+}
+
+.header-title h2 {
+    color: var(--text-main);
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.theme-text {
+    color: var(--theme-color);
+    text-shadow: 0 0 10px var(--theme-color-glow);
+}
+
+.icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.icon-btn:hover {
+    color: var(--error-color);
+    transform: scale(1.1);
+}
+
+.info-bar {
+    background: rgba(20, 151, 228, 0.1);
+    padding: 10px 20px;
+    font-size: 13px;
+    color: var(--text-muted);
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.info-bar span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#limit-count {
+    color: var(--theme-color);
+    font-weight: 600;
+}
+
+/* ==========================================
+   Content & Views
+========================================= */
+.content {
+    padding: 30px 20px;
+    min-height: 250px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.view-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 25px;
+    animation: fadeIn 0.3s ease;
+}
+
+/* Recipe Container */
+.recipe-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: var(--bg-light);
+    padding: 20px;
+    border-radius: 12px;
+    width: 100%;
+    justify-content: center;
+}
+
+.item-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.item-box img {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5));
+}
+
+.item-name {
+    color: var(--text-main);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.item-req {
+    color: var(--theme-color);
+    font-size: 12px;
+    font-weight: 700;
+    background: rgba(20, 151, 228, 0.15);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.arrow {
+    font-size: 24px;
+    animation: moveRight 1.5s infinite;
+}
+
+/* Buttons */
+.primary-btn {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    background: var(--theme-color);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px var(--theme-color-glow);
+}
+
+.primary-btn:hover {
+    background: #0f7bbd;
+    transform: translateY(-2px);
+}
+
+.pulse-btn {
+    animation: pulse 2s infinite;
+}
+
+/* Processing View */
+.loader-container {
+    text-align: center;
+    color: var(--text-main);
+}
+
+.loader-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+#time-remaining {
+    color: var(--text-muted);
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+.progress-bar-container {
+    width: 100%;
+    height: 12px;
+    background: var(--bg-light);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--theme-color);
+    box-shadow: 0 0 15px var(--theme-color);
+    transition: width 1s linear;
+}
+
+/* Ready View */
+.success-container {
+    text-align: center;
+}
+
+.success-icon {
+    font-size: 54px;
+    margin-bottom: 15px;
+    color: var(--success-color);
+    text-shadow: 0 0 15px rgba(46, 204, 113, 0.4);
+}
+
+.success-container h3 {
+    color: var(--text-main);
+    margin-bottom: 5px;
+}
+
+.success-container p {
+    color: var(--text-muted);
+    font-size: 14px;
+    text-align: center;
+}
+
+/* ==========================================
+   Notification System
+========================================= */
+#notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 9999;
+}
+
+.notify-toast {
+    background: var(--bg-dark);
+    backdrop-filter: blur(10px);
+    border-left: 4px solid var(--theme-color);
+    padding: 15px 20px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    min-width: 250px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    animation: slideInRight 0.4s ease forwards;
+    opacity: 0;
+    transform: translateX(100%);
+}
+
+.notify-toast.hiding {
+    animation: slideOutRight 0.4s ease forwards;
+}
+
+.notify-icon {
+    font-size: 20px;
+}
+
+.notify-icon.success { color: var(--success-color); }
+.notify-icon.error { color: var(--error-color); }
+.notify-icon.info { color: var(--theme-color); }
+
+.notify-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.notify-title {
+    color: var(--text-main);
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.notify-message {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+/* ==========================================
+   Keyframes & Animations
+========================================= */
+@keyframes popIn {
+    0% { transform: scale(0.9); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+@keyframes moveRight {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(5px); }
+    100% { transform: translateX(0); }
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 var(--theme-color-glow); }
+    70% { box-shadow: 0 0 0 15px rgba(20, 151, 228, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(20, 151, 228, 0); }
+}
+
+@keyframes slideInRight {
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideOutRight {
+    to { transform: translateX(100%); opacity: 0; }
+}
