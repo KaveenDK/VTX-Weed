@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VC Weed Processing</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div id="app" style="display: none">
+      <div id="bench-container" class="glass-panel">
+        <div class="header">
+          <div class="header-title">
+            <i class="fas fa-leaf theme-text"></i>
+            <h2>Processing Bench</h2>
+          </div>
+          <button id="close-btn" class="icon-btn">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="info-bar">
+          <span
+            ><i class="fas fa-clock"></i> Hourly Limit:
+            <span id="limit-count">0/3</span></span
+          >
+        </div>
+
+        <div class="content">
+          <div id="idle-view" class="view-section">
+            <div class="recipe-container">
+              <div class="item-box">
+                <img src="images/weed_leaf.png" alt="Weed Leaf" />
+                <span class="item-name">Weed Leaf</span>
+                <span class="item-req" id="req-amount">50x</span>
+              </div>
+              <div class="arrow">
+                <i class="fas fa-arrow-right theme-text"></i>
+              </div>
+              <div class="item-box">
+                <img src="images/weed_package.png" alt="Weed Package" />
+                <span class="item-name">Weed Package</span>
+                <span class="item-req" id="out-amount">1x</span>
+              </div>
+            </div>
+            <button id="start-btn" class="primary-btn">Start Processing</button>
+          </div>
+
+          <div id="processing-view" class="view-section" style="display: none">
+            <div class="loader-container">
+              <i class="fas fa-cog fa-spin theme-text loader-icon"></i>
+              <h3>Processing Batch...</h3>
+              <p id="time-remaining">Time Left: 00:00</p>
+            </div>
+            <div class="progress-bar-container">
+              <div id="progress-fill" class="progress-fill"></div>
+            </div>
+          </div>
+
+          <div id="ready-view" class="view-section" style="display: none">
+            <div class="success-container">
+              <i class="fas fa-box-open theme-text success-icon"></i>
+              <h3>Batch Ready!</h3>
+              <p>Your processed weed is ready to be collected.</p>
+            </div>
+            <button id="collect-btn" class="primary-btn pulse-btn">
+              Collect Output
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="notification-container"></div>
+
+    <script src="js/script.js"></script>
+  </body>
+</html>
