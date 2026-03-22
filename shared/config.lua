@@ -11,9 +11,9 @@ Config.ThemeColor = "#1497e4" -- Server theme color used for UI elements and Dis
 -- ==========================================
 Config.Webhooks = {
     -- Replace these with your actual Discord webhook URLs
-    Harvest = "", 
-    Process = "", 
-    Exploit = ""  
+    Harvest = "https://discord.com/api/webhooks/1485374361534726419/Z1y8tAQT6VAFvxTHHOtLgEFXoIixrA1gvP42Bv0Vbdsi1uOy2UbxBhoETRVq81HI4zfa", 
+    Process = "https://discord.com/api/webhooks/1485374608747008202/ntisPMXFuy0WTq9ythVZ8w-oU3sTMRVxMRGuJq5aJ2thg6GTPkhZtyM9qnHMpePyxw0k", 
+    Exploit = "https://discord.com/api/webhooks/1485374729689891018/6ALSR75wDSIJTS0cIwohOFZZUgC3TpoyMIu_aFbiWSL61kxdZ_SVj82-m0o-xWmpynP-"  
 }
 
 -- ==========================================
