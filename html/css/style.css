@@ -268,63 +268,6 @@ body {
 }
 
 /* ==========================================
-   Notification System
-========================================= */
-#notification-container {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    z-index: 9999;
-}
-
-.notify-toast {
-    background: var(--bg-dark);
-    backdrop-filter: blur(10px);
-    border-left: 4px solid var(--theme-color);
-    padding: 15px 20px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    min-width: 250px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    animation: slideInRight 0.4s ease forwards;
-    opacity: 0;
-    transform: translateX(100%);
-}
-
-.notify-toast.hiding {
-    animation: slideOutRight 0.4s ease forwards;
-}
-
-.notify-icon {
-    font-size: 20px;
-}
-
-.notify-icon.success { color: var(--success-color); }
-.notify-icon.error { color: var(--error-color); }
-.notify-icon.info { color: var(--theme-color); }
-
-.notify-content {
-    display: flex;
-    flex-direction: column;
-}
-
-.notify-title {
-    color: var(--text-main);
-    font-weight: 600;
-    font-size: 14px;
-}
-
-.notify-message {
-    color: var(--text-muted);
-    font-size: 12px;
-}
-
-/* ==========================================
    Keyframes & Animations
 ========================================= */
 @keyframes popIn {

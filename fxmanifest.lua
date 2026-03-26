@@ -27,7 +27,6 @@ files {
     'html/index.html',
     'html/css/style.css',
     'html/js/script.js',
-    'html/sounds/notify.mp3',
     'html/images/*.png'
 }
 
