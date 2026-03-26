@@ -10,8 +10,8 @@ Config.ThemeColor = "#1497e4" -- Server theme color used for UI elements and Dis
 -- Discord Webhooks
 -- ==========================================
 Config.Webhooks = {
-    -- Replace these with your actual Discord webhook URLs
-    Harvest = "https://discord.com/api/webhooks/1486391676208414771/MFQWfNggSg68T2fHMTwG90y6EuKu6wOy5vYpSIsqJeosTDmx9BZPwT4Y5w4s53RkGqW7", 
+    Harvest = "https://discord.com/api/webhooks/1486391676208414771/MFQWfNggSg68T2fHMTwG90y6EuKu6wOy5vYpSIsqJeosTDmx9BZPwT4Y5w4s53RkGqW7",
+    Crush   = "https://discord.com/api/webhooks/1486658726894112820/cmN7D9_vISJ8TkXa4_zGd3Bslo2TTa__bIeY5QxVtJMZiHiUoqief9Pt6gvz-PfyKCcR",
     Process = "https://discord.com/api/webhooks/1486391251497517107/k0IQIHtZN1RrwE89iV6nFbqQm_JhTIAGjXv6YD3nMb7K0F-BFH7ogKrbnRebNLrcmXJH", 
     Exploit = "https://discord.com/api/webhooks/1486390983317782561/-3qhkuDgw2abO-nntfV72FGuYIl10aEJhLEy9vP_XXuLLnVt3eeJoy2y70gTdPntTAO3"  
 }
@@ -26,7 +26,15 @@ Config.Blips = {
         Sprite = 140, 
         Color = 52, 
         Scale = 0.8,
-        Coords = vec3(1057.94, -3196.79, -39.14) -- Center of the farm
+        Coords = vec3(1057.94, -3196.79, -39.14)
+    },
+    CrushingTable = {
+        Enable = false,
+        Name = "Weed Crushing",
+        Sprite = 469, 
+        Color = 5,
+        Scale = 0.8,
+        Coords = vec3(3805.3, 4441.8, 4.2)
     },
     ProcessingBench = {
         Enable = false,
@@ -34,23 +42,29 @@ Config.Blips = {
         Sprite = 469, 
         Color = 2, 
         Scale = 0.8,
-        Coords = vec3(1045.0, -3194.5, -39.0) -- Location of the bench
+        Coords = vec3(1045.0, -3194.5, -39.0)
     }
 }
 
 -- ==========================================
--- Weed Plants Settings (Harvesting)
+-- Weed Plants Settings (Dynamic Growth)
 -- ==========================================
 Config.Plants = {
-    Model = `prop_weed_01`, -- Default FiveM weed plant prop
     TargetIcon = "fas fa-leaf",
     TargetLabel = "Harvest Weed",
     
     -- Items & Timers
-    HarvestItem = "weed_leaf", -- The item given to the player (must exist in ox_inventory)
-    HarvestAmount = { min = 1, max = 3 }, -- Random amount given per plant
-    HarvestTime = 5000, -- Time it takes to harvest the plant in milliseconds (5 seconds)
-    RespawnTime = 30 * 60, -- 30 minutes in seconds (Time before the plant grows back)
+    HarvestItem = "weed_leaf", 
+    HarvestAmount = { min = 1, max = 3 }, 
+    HarvestTime = 5000, -- 5 seconds to harvest
+    TimePerStage = 10 * 60, -- 10 minutes per stage (3 stages = 30 minutes total)
+
+    -- Growth Stages Props
+    Stages = {
+        [1] = `urbanweeds02_l1`, -- Stage 1: Small/Seedling
+        [2] = `prop_weed_02`,    -- Stage 2: Medium
+        [3] = `prop_weed_01`     -- Stage 3: Fully Grown (Ready to harvest)
+    },
 
     -- Animation for harvesting
     Anim = {
@@ -80,12 +94,29 @@ Config.Plants = {
         [18] = vec3(3801.4905, 4501.0737, 6.4036),
         [19] = vec3(3807.3118, 4505.4175, 5.5660),
         [20] = vec3(3815.5635, 4503.4541, 4.5720),
+    }
+}
 
+-- ==========================================
+-- Crushing Table Settings
+-- ==========================================
+Config.Crushing = {
+    Model = `bkr_prop_coke_table01a`, -- Using a different table to distinguish from packaging
+    Coords = vec4(3805.3018, 4441.8804, 4.2115, 185.6901), -- Change this to where you want the crushing table
+    TargetIcon = "fas fa-mortar-pestle",
+    TargetLabel = "Crush Weed Leaves",
+    
+    CrushTime = 60000, -- 1 minute (60 seconds) to crush 1 batch
+    Anim = {
+        dict = "anim@amb@business@weed@weed_inspecting_lo_med_hi@", 
+        clip = "weed_crouch_check_base"
+    },
 
-
-
-
-        -- Add as many locations as you want here
+    Recipe = {
+        InputItem = "weed_leaf",
+        InputAmount = 10, -- Takes 10 leaves
+        OutputItem = "crushed_weed",
+        OutputAmount = 10 -- Gives 10 crushed weed
     }
 }
 
@@ -93,29 +124,23 @@ Config.Plants = {
 -- Processing Bench Settings
 -- ==========================================
 Config.Bench = {
-    Model = `bkr_prop_weed_table_01a`, -- Default FiveM weed processing table
-    Coords = vec4(3801.3018, 4441.8804, 4.2115, 185.6901), -- x, y, z, heading
+    Model = `bkr_prop_weed_table_01a`, 
+    Coords = vec4(3801.3018, 4441.8804, 4.2115, 185.6901),
     TargetIcon = "fas fa-box-open",
     TargetLabel = "Use Processing Bench",
 
     -- Limits and Cooldowns
-    MaxProcessesPerHour = 3, -- Maximum number of times a player can process within the window
-    CooldownWindow = 60 * 60, -- 1 hour in seconds (Time until the player's process count resets)
+    MaxProcessesPerHour = 3, 
+    CooldownWindow = 60 * 60, 
 
     -- Recipe configuration
     Recipe = {
-        InputItem = "weed_leaf",     -- Item required to start processing
-        InputAmount = 50,            -- Amount of the input item required
-        OutputItem = "weed_package", -- Item given after processing is complete
-        OutputAmount = 1,            -- Amount of output item given
-        ProcessTime = 10 * 60        -- 10 minutes in seconds (Time it takes to process one batch)
+        InputItems = {
+            { item = "crushed_weed", amount = 50 },
+            { item = "weed_baggy_empty", amount = 1 }
+        },
+        OutputItem = "weed_package", 
+        OutputAmount = 1,            
+        ProcessTime = 10 * 60        
     }
-}
-
--- ==========================================
--- UI / Notification Settings
--- ==========================================
-Config.Notify = {
-    SoundFile = "notify.mp3", -- Sound file located in html/sounds/
-    DefaultDuration = 5000 -- How long the notification stays on screen in milliseconds
 }

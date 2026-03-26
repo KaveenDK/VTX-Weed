@@ -46,10 +46,21 @@ RegisterNetEvent('vtx_weed:server:discordLog', function(action, src, data)
         WebhookURL = Config.Webhooks.Harvest
         Title = "🌿 Weed Harvested"
         Description = string.format("**Action:** Harvested a Weed Plant\n**Plant ID:** %s\n**Received:** %sx %s", data.plantId, data.amount, Config.Plants.HarvestItem)
+    elseif action == 'crush' then
+        WebhookURL = Config.Webhooks.Crush -- Updated to use the dedicated Crush webhook
+        Title = "🔨 Weed Crushed"
+        Description = string.format("**Action:** Crushed Weed Leaves\n**Input Used:** %sx %s\n**Received:** %sx %s", Config.Crushing.Recipe.InputAmount, Config.Crushing.Recipe.InputItem, Config.Crushing.Recipe.OutputAmount, Config.Crushing.Recipe.OutputItem)
     elseif action == 'process_start' then
         WebhookURL = Config.Webhooks.Process
         Title = "⚙️ Weed Processing Started"
-        Description = string.format("**Action:** Started Processing Bench\n**Input Used:** %sx %s", Config.Bench.Recipe.InputAmount, Config.Bench.Recipe.InputItem)
+        
+        -- Dynamically build the input string since there are multiple items now
+        local inputStr = ""
+        for _, req in pairs(Config.Bench.Recipe.InputItems) do
+            inputStr = inputStr .. string.format("%sx %s\n", req.amount, req.item)
+        end
+        
+        Description = string.format("**Action:** Started Processing Bench\n**Inputs Used:**\n%s", inputStr)
     elseif action == 'process_collect' then
         WebhookURL = Config.Webhooks.Process
         Title = "📦 Processed Weed Collected"

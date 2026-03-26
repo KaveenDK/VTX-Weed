@@ -23,6 +23,17 @@ function openMenu(state, config) {
     // Set basic config data
     currentTotalTime = config.recipe.ProcessTime;
     
+    // Dynamically set the required item amounts based on the Lua Config array
+    if (config.recipe && config.recipe.InputItems) {
+        // Assuming InputItems[0] is crushed_weed and InputItems[1] is weed_baggy_empty
+        if (config.recipe.InputItems[0]) {
+            document.getElementById('req-amount-1').innerText = `${config.recipe.InputItems[0].amount}x`;
+        }
+        if (config.recipe.InputItems[1]) {
+            document.getElementById('req-amount-2').innerText = `${config.recipe.InputItems[1].amount}x`;
+        }
+    }
+    
     // Update Limit Counter
     document.getElementById('limit-count').innerText = `${state.hourlyCount}/${config.limits.max}`;
 
