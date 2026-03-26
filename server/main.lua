@@ -1,15 +1,15 @@
 local ox_inventory = exports.ox_inventory
 
 -- ==========================================
--- State Management (Source of Truth)
+-- State Management
 -- ==========================================
 
--- Plant States: Keep track of which plants are grown
+-- Plant States: Track growth stages (0 = Growing, 1 = Stage 1, 2 = Stage 2, 3 = Ready)
 local PlantStates = {}
 for i = 1, #Config.Plants.Locations do
-    PlantStates[i] = true -- Initially, all plants are grown
+    PlantStates[i] = 3 -- Initially, all plants are fully grown (Stage 3)
 end
--- Share the plant states globally so clients know when to spawn props
+-- Share the plant states globally so clients know which prop to spawn
 GlobalState.vtx_weed_plants = PlantStates
 
 -- Bench State: Prevent multiple access and track limits
@@ -33,6 +33,20 @@ local function checkHourlyLimit()
     end
 end
 
+-- Function to handle plant growth stages over time
+local function growPlant(plantId, currentStage)
+    SetTimeout(Config.Plants.TimePerStage * 1000, function()
+        local nextStage = currentStage + 1
+        PlantStates[plantId] = nextStage
+        GlobalState.vtx_weed_plants = PlantStates -- Sync new stage with clients
+        
+        -- If not fully grown yet, trigger the next growth cycle
+        if nextStage < 3 then
+            growPlant(plantId, nextStage)
+        end
+    end)
+end
+
 -- ==========================================
 -- Plant Harvesting Logic
 -- ==========================================
@@ -40,13 +54,13 @@ end
 lib.callback.register('vtx_weed:server:harvestPlant', function(source, plantId)
     local src = source
 
-    -- Validate plant ID and if it is actually grown
-    if not plantId or not PlantStates[plantId] then
+    -- Validate plant ID and ensure it is at Stage 3 (Fully Grown)
+    if not plantId or PlantStates[plantId] ~= 3 then
         return false, "Plant is not fully grown yet."
     end
 
-    -- Set plant to harvested (false)
-    PlantStates[plantId] = false
+    -- Set plant to harvested (Stage 0)
+    PlantStates[plantId] = 0
     GlobalState.vtx_weed_plants = PlantStates -- Sync with all clients
 
     -- Give random amount of weed leaves
@@ -56,13 +70,34 @@ lib.callback.register('vtx_weed:server:harvestPlant', function(source, plantId)
     -- Trigger Discord Log
     TriggerEvent('vtx_weed:server:discordLog', 'harvest', src, { plantId = plantId, amount = amount })
 
-    -- Start server-side timer to respawn the plant
-    SetTimeout(Config.Plants.RespawnTime * 1000, function()
-        PlantStates[plantId] = true
-        GlobalState.vtx_weed_plants = PlantStates -- Sync that plant has grown back
-    end)
+    -- Start server-side growth cycle
+    growPlant(plantId, 0)
 
     return true, "Successfully harvested."
+end)
+
+-- ==========================================
+-- Crushing Logic
+-- ==========================================
+
+lib.callback.register('vtx_weed:server:crushWeed', function(source)
+    local src = source
+    local recipe = Config.Crushing.Recipe
+
+    -- Check if player has enough leaves
+    local hasItems = ox_inventory:Search(src, 'count', recipe.InputItem)
+    if hasItems < recipe.InputAmount then
+        return false, "Not enough " .. recipe.InputItem .. " to crush."
+    end
+
+    -- Remove leaves and give crushed weed
+    ox_inventory:RemoveItem(src, recipe.InputItem, recipe.InputAmount)
+    ox_inventory:AddItem(src, recipe.OutputItem, recipe.OutputAmount)
+
+    -- Trigger Discord Log
+    TriggerEvent('vtx_weed:server:discordLog', 'crush', src, {})
+
+    return true, "Successfully crushed the weed leaves."
 end)
 
 -- ==========================================
@@ -120,14 +155,18 @@ lib.callback.register('vtx_weed:server:startProcessing', function(source)
         return false, "Bench has reached its maximum hourly capacity."
     end
 
-    -- Check Inventory (ox_inventory)
-    local hasItems = ox_inventory:Search(src, 'count', Config.Bench.Recipe.InputItem)
-    if hasItems < Config.Bench.Recipe.InputAmount then
-        return false, "Not enough "..Config.Bench.Recipe.InputItem.."."
+    -- Check Inventory for ALL required items (ox_inventory)
+    for _, req in pairs(Config.Bench.Recipe.InputItems) do
+        local hasItem = ox_inventory:Search(src, 'count', req.item)
+        if hasItem < req.amount then
+            return false, "Not enough " .. req.item .. "."
+        end
     end
 
-    -- Remove items and update state
-    ox_inventory:RemoveItem(src, Config.Bench.Recipe.InputItem, Config.Bench.Recipe.InputAmount)
+    -- Remove ALL required items
+    for _, req in pairs(Config.Bench.Recipe.InputItems) do
+        ox_inventory:RemoveItem(src, req.item, req.amount)
+    end
     
     BenchState.status = 'processing'
     BenchState.finishTime = os.time() + Config.Bench.Recipe.ProcessTime

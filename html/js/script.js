@@ -13,8 +13,6 @@ window.addEventListener('message', function(event) {
 
     if (item.action === "openMenu") {
         openMenu(item.data, item.config);
-    } else if (item.action === "showNotification") {
-        showNotification(item.data);
     }
 });
 
@@ -24,6 +22,17 @@ window.addEventListener('message', function(event) {
 function openMenu(state, config) {
     // Set basic config data
     currentTotalTime = config.recipe.ProcessTime;
+    
+    // Dynamically set the required item amounts based on the Lua Config array
+    if (config.recipe && config.recipe.InputItems) {
+        // Assuming InputItems[0] is crushed_weed and InputItems[1] is weed_baggy_empty
+        if (config.recipe.InputItems[0]) {
+            document.getElementById('req-amount-1').innerText = `${config.recipe.InputItems[0].amount}x`;
+        }
+        if (config.recipe.InputItems[1]) {
+            document.getElementById('req-amount-2').innerText = `${config.recipe.InputItems[1].amount}x`;
+        }
+    }
     
     // Update Limit Counter
     document.getElementById('limit-count').innerText = `${state.hourlyCount}/${config.limits.max}`;
@@ -143,45 +152,3 @@ document.addEventListener('keydown', function(event) {
         closeMenu();
     }
 });
-
-// ==========================================
-// Notification System
-// ==========================================
-function showNotification(data) {
-    const container = document.getElementById('notification-container');
-    const toast = document.createElement('div');
-    toast.className = 'notify-toast';
-
-    // Set Border Color
-    toast.style.borderLeftColor = data.themeColor || '#1497e4';
-
-    // Determine Icon
-    let iconClass = 'fas fa-info-circle info';
-    if (data.type === 'success') iconClass = 'fas fa-check-circle success';
-    if (data.type === 'error') iconClass = 'fas fa-exclamation-circle error';
-
-    toast.innerHTML = `
-        <i class="${iconClass} notify-icon"></i>
-        <div class="notify-content">
-            <span class="notify-title">${data.title}</span>
-            <span class="notify-message">${data.message}</span>
-        </div>
-    `;
-
-    container.appendChild(toast);
-
-    // Play Sound
-    const audio = new Audio('sounds/notify.mp3');
-    audio.volume = 0.5;
-    audio.play().catch(e => console.log("Audio play blocked:", e));
-
-    // Remove logic
-    setTimeout(() => {
-        toast.classList.add('hiding');
-        setTimeout(() => {
-            if (container.contains(toast)) {
-                container.removeChild(toast);
-            }
-        }, 400); // Matches the CSS animation duration
-    }, data.duration || 5000);
-}

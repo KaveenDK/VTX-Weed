@@ -20,7 +20,7 @@ CreateThread(function()
 end)
 
 -- ==========================================
--- Weed Plants Logic (Zero-Lag via lib.points)
+-- Weed Plants Logic (Dynamic Stages & Zero-Lag)
 -- ==========================================
 local spawnedPlants = {}
 
@@ -44,37 +44,50 @@ local function harvestPlant(plantId)
     end
 end
 
-local function spawnPlantProp(plantId, coords)
-    if spawnedPlants[plantId] then return end
-
-    lib.requestModel(Config.Plants.Model)
-    local obj = CreateObject(Config.Plants.Model, coords.x, coords.y, coords.z, false, false, false)
-    SetEntityHeading(obj, math.random(0, 360) + 0.0)
-    PlaceObjectOnGroundProperly(obj)
-    FreezeEntityPosition(obj, true)
-    
-    spawnedPlants[plantId] = obj
-
-    ox_target:addLocalEntity(obj, {
-        {
-            name = 'harvest_weed_' .. plantId,
-            icon = Config.Plants.TargetIcon,
-            label = Config.Plants.TargetLabel,
-            distance = 2.0,
-            onSelect = function()
-                harvestPlant(plantId)
-            end
-        }
-    })
-    SetModelAsNoLongerNeeded(Config.Plants.Model)
-end
-
 local function removePlantProp(plantId)
     if spawnedPlants[plantId] then
         ox_target:removeLocalEntity(spawnedPlants[plantId], 'harvest_weed_' .. plantId)
         DeleteEntity(spawnedPlants[plantId])
         spawnedPlants[plantId] = nil
     end
+end
+
+local function spawnPlantProp(plantId, coords, stage)
+    -- If stage is 0 (harvested/growing), just remove the prop and return
+    if not stage or stage == 0 then
+        removePlantProp(plantId)
+        return
+    end
+
+    local model = Config.Plants.Stages[stage]
+    if not model then return end
+
+    -- Remove existing prop if it's transitioning to a new stage
+    removePlantProp(plantId)
+
+    lib.requestModel(model)
+    local obj = CreateObject(model, coords.x, coords.y, coords.z, false, false, false)
+    SetEntityHeading(obj, math.random(0, 360) + 0.0)
+    PlaceObjectOnGroundProperly(obj)
+    FreezeEntityPosition(obj, true)
+    
+    spawnedPlants[plantId] = obj
+
+    -- Only allow harvesting if the plant is fully grown (Stage 3)
+    if stage == 3 then
+        ox_target:addLocalEntity(obj, {
+            {
+                name = 'harvest_weed_' .. plantId,
+                icon = Config.Plants.TargetIcon,
+                label = Config.Plants.TargetLabel,
+                distance = 2.0,
+                onSelect = function()
+                    harvestPlant(plantId)
+                end
+            }
+        })
+    end
+    SetModelAsNoLongerNeeded(model)
 end
 
 -- Create points for each plant location
@@ -88,7 +101,7 @@ for id, coords in ipairs(Config.Plants.Locations) do
     function point:onEnter()
         local states = GlobalState.vtx_weed_plants
         if states and states[self.plantId] then
-            spawnPlantProp(self.plantId, self.coords)
+            spawnPlantProp(self.plantId, self.coords, states[self.plantId])
         end
     end
 
@@ -103,14 +116,69 @@ AddStateBagChangeHandler('vtx_weed_plants', 'global', function(bagName, key, val
     for id, coords in ipairs(Config.Plants.Locations) do
         local dist = #(GetEntityCoords(cache.ped) - coords)
         if dist <= 50.0 then
-            if value[id] then
-                spawnPlantProp(id, coords)
-            else
-                removePlantProp(id)
-            end
+            local currentStage = value[id]
+            spawnPlantProp(id, coords, currentStage)
         end
     end
 end)
+
+-- ==========================================
+-- Crushing Table Logic
+-- ==========================================
+local crushingObj = nil
+local crushingPoint = lib.points.new({
+    coords = vec3(Config.Crushing.Coords.x, Config.Crushing.Coords.y, Config.Crushing.Coords.z),
+    distance = 50.0
+})
+
+local function crushWeedLeaves()
+    if lib.progressBar({
+        duration = Config.Crushing.CrushTime,
+        label = "Crushing Weed Leaves...",
+        useWhileDead = false,
+        canCancel = true,
+        disable = { car = true, move = true, combat = true },
+        anim = { dict = Config.Crushing.Anim.dict, clip = Config.Crushing.Anim.clip },
+    }) then
+        local success, msg = lib.callback.await('vtx_weed:server:crushWeed', false)
+        if success then
+            exports['vtx_weed']:SendCustomNotify('Success', msg, 'success')
+        else
+            exports['vtx_weed']:SendCustomNotify('Error', msg, 'error')
+        end
+    else
+        exports['vtx_weed']:SendCustomNotify('Cancelled', 'Crushing cancelled.', 'error')
+    end
+end
+
+function crushingPoint:onEnter()
+    lib.requestModel(Config.Crushing.Model)
+    crushingObj = CreateObject(Config.Crushing.Model, self.coords.x, self.coords.y, self.coords.z, false, false, false)
+    SetEntityHeading(crushingObj, Config.Crushing.Coords.w)
+    PlaceObjectOnGroundProperly(crushingObj)
+    FreezeEntityPosition(crushingObj, true)
+    
+    ox_target:addLocalEntity(crushingObj, {
+        {
+            name = 'use_weed_crusher',
+            icon = Config.Crushing.TargetIcon,
+            label = Config.Crushing.TargetLabel,
+            distance = 2.0,
+            onSelect = function()
+                crushWeedLeaves()
+            end
+        }
+    })
+    SetModelAsNoLongerNeeded(Config.Crushing.Model)
+end
+
+function crushingPoint:onExit()
+    if crushingObj then
+        ox_target:removeLocalEntity(crushingObj, 'use_weed_crusher')
+        DeleteEntity(crushingObj)
+        crushingObj = nil
+    end
+end
 
 -- ==========================================
 -- Processing Bench Logic
