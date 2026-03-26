@@ -3,7 +3,7 @@
 // ==========================================
 let currentTotalTime = 0;
 let timerInterval = null;
-const resourceName = 'vc_weed';
+const resourceName = 'vtx_weed';
 
 // ==========================================
 // Event Listeners for Lua Messages

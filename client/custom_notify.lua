@@ -24,6 +24,6 @@ end
 exports('SendCustomNotify', SendCustomNotify)
 
 -- Register as a NetEvent in case the Server-side needs to trigger it directly
-RegisterNetEvent('vc_weed:client:notify', function(title, message, notifyType)
+RegisterNetEvent('vtx_weed:client:notify', function(title, message, notifyType)
     SendCustomNotify(title, message, notifyType)
 end)

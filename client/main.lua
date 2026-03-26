@@ -33,14 +33,14 @@ local function harvestPlant(plantId)
         disable = { car = true, move = true, combat = true },
         anim = { dict = Config.Plants.Anim.dict, clip = Config.Plants.Anim.clip },
     }) then
-        local success, msg = lib.callback.await('vc_weed:server:harvestPlant', false, plantId)
+        local success, msg = lib.callback.await('vtx_weed:server:harvestPlant', false, plantId)
         if success then
-            exports['vc_weed']:SendCustomNotify('Harvested', msg, 'success')
+            exports['vtx_weed']:SendCustomNotify('Harvested', msg, 'success')
         else
-            exports['vc_weed']:SendCustomNotify('Failed', msg, 'error')
+            exports['vtx_weed']:SendCustomNotify('Failed', msg, 'error')
         end
     else
-        exports['vc_weed']:SendCustomNotify('Cancelled', 'Harvesting cancelled.', 'error')
+        exports['vtx_weed']:SendCustomNotify('Cancelled', 'Harvesting cancelled.', 'error')
     end
 end
 
@@ -86,7 +86,7 @@ for id, coords in ipairs(Config.Plants.Locations) do
     })
 
     function point:onEnter()
-        local states = GlobalState.vc_weed_plants
+        local states = GlobalState.vtx_weed_plants
         if states and states[self.plantId] then
             spawnPlantProp(self.plantId, self.coords)
         end
@@ -98,7 +98,7 @@ for id, coords in ipairs(Config.Plants.Locations) do
 end
 
 -- Sync props instantly if state changes while player is inside the point radius
-AddStateBagChangeHandler('vc_weed_plants', 'global', function(bagName, key, value, _reserved, replicated)
+AddStateBagChangeHandler('vtx_weed_plants', 'global', function(bagName, key, value, _reserved, replicated)
     if not value then return end
     for id, coords in ipairs(Config.Plants.Locations) do
         local dist = #(GetEntityCoords(cache.ped) - coords)
@@ -122,7 +122,7 @@ local benchPoint = lib.points.new({
 })
 
 local function openBenchUI()
-    local state, err = lib.callback.await('vc_weed:server:getBenchState', false)
+    local state, err = lib.callback.await('vtx_weed:server:getBenchState', false)
     if state then
         SetNuiFocus(true, true)
         SendNUIMessage({
@@ -135,7 +135,7 @@ local function openBenchUI()
             }
         })
     else
-        exports['vc_weed']:SendCustomNotify('Access Denied', err or 'Cannot access bench.', 'error')
+        exports['vtx_weed']:SendCustomNotify('Access Denied', err or 'Cannot access bench.', 'error')
     end
 end
 
@@ -173,28 +173,28 @@ end
 -- ==========================================
 RegisterNUICallback('closeUI', function(data, cb)
     SetNuiFocus(false, false)
-    TriggerServerEvent('vc_weed:server:closeBench')
+    TriggerServerEvent('vtx_weed:server:closeBench')
     cb('ok')
 end)
 
 RegisterNUICallback('startProcessing', function(data, cb)
-    local success, response = lib.callback.await('vc_weed:server:startProcessing', false)
+    local success, response = lib.callback.await('vtx_weed:server:startProcessing', false)
     if success then
-        exports['vc_weed']:SendCustomNotify('Success', 'Weed processing started.', 'success')
+        exports['vtx_weed']:SendCustomNotify('Success', 'Weed processing started.', 'success')
         cb({ success = true, state = response })
     else
-        exports['vc_weed']:SendCustomNotify('Error', response, 'error')
+        exports['vtx_weed']:SendCustomNotify('Error', response, 'error')
         cb({ success = false })
     end
 end)
 
 RegisterNUICallback('collectOutput', function(data, cb)
-    local success, response = lib.callback.await('vc_weed:server:collectOutput', false)
+    local success, response = lib.callback.await('vtx_weed:server:collectOutput', false)
     if success then
-        exports['vc_weed']:SendCustomNotify('Collected', 'You received the processed weed.', 'success')
+        exports['vtx_weed']:SendCustomNotify('Collected', 'You received the processed weed.', 'success')
         cb({ success = true, state = response })
     else
-        exports['vc_weed']:SendCustomNotify('Error', response, 'error')
+        exports['vtx_weed']:SendCustomNotify('Error', response, 'error')
         cb({ success = false })
     end
 end)
