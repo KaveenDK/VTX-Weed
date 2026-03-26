@@ -22,7 +22,7 @@ local function getIdentifier(src, idType)
     return "Not Found"
 end
 
-RegisterNetEvent('vc_weed:server:discordLog', function(action, src, data)
+RegisterNetEvent('vtx_weed:server:discordLog', function(action, src, data)
     local WebhookURL = ""
     local Title = ""
     local Description = ""

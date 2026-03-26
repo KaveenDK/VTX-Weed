@@ -10,7 +10,7 @@ for i = 1, #Config.Plants.Locations do
     PlantStates[i] = true -- Initially, all plants are grown
 end
 -- Share the plant states globally so clients know when to spawn props
-GlobalState.vc_weed_plants = PlantStates
+GlobalState.vtx_weed_plants = PlantStates
 
 -- Bench State: Prevent multiple access and track limits
 local BenchState = {
@@ -37,7 +37,7 @@ end
 -- Plant Harvesting Logic
 -- ==========================================
 
-lib.callback.register('vc_weed:server:harvestPlant', function(source, plantId)
+lib.callback.register('vtx_weed:server:harvestPlant', function(source, plantId)
     local src = source
 
     -- Validate plant ID and if it is actually grown
@@ -47,19 +47,19 @@ lib.callback.register('vc_weed:server:harvestPlant', function(source, plantId)
 
     -- Set plant to harvested (false)
     PlantStates[plantId] = false
-    GlobalState.vc_weed_plants = PlantStates -- Sync with all clients
+    GlobalState.vtx_weed_plants = PlantStates -- Sync with all clients
 
     -- Give random amount of weed leaves
     local amount = math.random(Config.Plants.HarvestAmount.min, Config.Plants.HarvestAmount.max)
     ox_inventory:AddItem(src, Config.Plants.HarvestItem, amount)
 
     -- Trigger Discord Log
-    TriggerEvent('vc_weed:server:discordLog', 'harvest', src, { plantId = plantId, amount = amount })
+    TriggerEvent('vtx_weed:server:discordLog', 'harvest', src, { plantId = plantId, amount = amount })
 
     -- Start server-side timer to respawn the plant
     SetTimeout(Config.Plants.RespawnTime * 1000, function()
         PlantStates[plantId] = true
-        GlobalState.vc_weed_plants = PlantStates -- Sync that plant has grown back
+        GlobalState.vtx_weed_plants = PlantStates -- Sync that plant has grown back
     end)
 
     return true, "Successfully harvested."
@@ -70,7 +70,7 @@ end)
 -- ==========================================
 
 -- 1. Request to open Bench
-lib.callback.register('vc_weed:server:getBenchState', function(source)
+lib.callback.register('vtx_weed:server:getBenchState', function(source)
     local src = source
     checkHourlyLimit() -- Refresh window limit before sending state
 
@@ -91,7 +91,7 @@ lib.callback.register('vc_weed:server:getBenchState', function(source)
 end)
 
 -- 2. Unlock bench when UI is closed
-RegisterNetEvent('vc_weed:server:closeBench', function()
+RegisterNetEvent('vtx_weed:server:closeBench', function()
     local src = source
     if BenchState.inUseBy == src then
         BenchState.inUseBy = nil
@@ -107,7 +107,7 @@ AddEventHandler('playerDropped', function()
 end)
 
 -- 3. Start Processing
-lib.callback.register('vc_weed:server:startProcessing', function(source)
+lib.callback.register('vtx_weed:server:startProcessing', function(source)
     local src = source
     
     -- Security Check: Ensure only the locked player can start
@@ -134,7 +134,7 @@ lib.callback.register('vc_weed:server:startProcessing', function(source)
     BenchState.hourlyCount = BenchState.hourlyCount + 1
 
     -- Trigger Discord Log
-    TriggerEvent('vc_weed:server:discordLog', 'process_start', src, {})
+    TriggerEvent('vtx_weed:server:discordLog', 'process_start', src, {})
 
     -- Automatically set to ready when time is up (Server-side safety)
     SetTimeout(Config.Bench.Recipe.ProcessTime * 1000, function()
@@ -147,7 +147,7 @@ lib.callback.register('vc_weed:server:startProcessing', function(source)
 end)
 
 -- 4. Collect Processed Output
-lib.callback.register('vc_weed:server:collectOutput', function(source)
+lib.callback.register('vtx_weed:server:collectOutput', function(source)
     local src = source
 
     if BenchState.inUseBy ~= src then return false, "Unauthorized" end
@@ -164,7 +164,7 @@ lib.callback.register('vc_weed:server:collectOutput', function(source)
     BenchState.finishTime = 0
 
     -- Trigger Discord Log
-    TriggerEvent('vc_weed:server:discordLog', 'process_collect', src, {})
+    TriggerEvent('vtx_weed:server:discordLog', 'process_collect', src, {})
 
     return true, BenchState
 end)

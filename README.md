@@ -1,4 +1,4 @@
-# 🌿 vc_weed - Advanced Zero-Lag Weed Processing
+# 🌿 vtx_weed - Advanced Zero-Lag Weed Processing
 
 A highly optimized, modern, and secure weed harvesting and processing script built specifically for the **Qbox** framework. It features zero-lag prop rendering, a beautiful glass-morphism UI, strict server-side security to prevent exploits, and advanced Discord logging.
 
@@ -33,10 +33,10 @@ Ensure you have the following resources installed and updated:
 ## 🛠️ Installation Guide
 
 **Step 1: Download & Place Resource**
-Extract the `vc_weed` folder into your server's `resources` directory (e.g., `resources/[scripts]/vc_weed`).
+Extract the `vtx_weed` folder into your server's `resources` directory (e.g., `resources/[scripts]/vtx_weed`).
 
 **Step 2: Add Items to ox_inventory**
-Open `ox_inventory/data/items.lua` and add the item snippets found in `vc_weed/installation/items.lua`:
+Open `ox_inventory/data/items.lua` and add the item snippets found in `vtx_weed/installation/items.lua`:
 
 ```lua
 ['weed_leaf'] = {
@@ -60,7 +60,7 @@ Open `ox_inventory/data/items.lua` and add the item snippets found in `vc_weed/i
 **Step 3: Setup Images**
 You must place your generated item images (`weed_leaf.png` and `weed_package.png`) into **BOTH** of the following directories:
 
-1. `vc_weed/html/images/` (For the Bench UI)
+1. `vtx_weed/html/images/` (For the Bench UI)
 2. `ox_inventory/web/images/` (For the Player Inventory)
 
 **Step 4: Configuration**
@@ -75,7 +75,7 @@ Open `shared/config.lua` and configure your settings:
 Add the following line to your `server.cfg`:
 
 ```cfg
-ensure vc_weed
+ensure vtx_weed
 ```
 
 ---
