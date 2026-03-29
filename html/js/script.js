@@ -34,9 +34,6 @@ function openMenu(state, config) {
         }
     }
     
-    // Update Limit Counter
-    document.getElementById('limit-count').innerText = `${state.hourlyCount}/${config.limits.max}`;
-
     // Apply Theme Color to progress bar dynamically
     document.documentElement.style.setProperty('--theme-color', config.theme || '#1497e4');
 
@@ -128,8 +125,6 @@ document.getElementById('start-btn').addEventListener('click', function() {
     }).then(resp => resp.json()).then(data => {
         if (data.success) {
             updateView(data.state);
-            // Also update the limit counter
-            document.getElementById('limit-count').innerText = `${data.state.hourlyCount}/3`;
         }
     });
 });

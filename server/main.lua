@@ -12,26 +12,16 @@ end
 -- Share the plant states globally so clients know which prop to spawn
 GlobalState.vtx_weed_plants = PlantStates
 
--- Bench State: Prevent multiple access and track limits
+-- Bench State: Prevent multiple access and track processing status
 local BenchState = {
     inUseBy = nil,       -- Player ID currently using the UI
     status = 'idle',     -- 'idle', 'processing', 'ready'
-    finishTime = 0,      -- os.time() when processing finishes
-    hourlyCount = 0,     -- How many times processed in current window
-    windowReset = os.time() + Config.Bench.CooldownWindow -- When the 1-hour limit resets
+    finishTime = 0       -- os.time() when processing finishes
 }
 
 -- ==========================================
 -- Helper Functions
 -- ==========================================
-
--- Function to check and reset the hourly bench limit
-local function checkHourlyLimit()
-    if os.time() > BenchState.windowReset then
-        BenchState.hourlyCount = 0
-        BenchState.windowReset = os.time() + Config.Bench.CooldownWindow
-    end
-end
 
 -- Function to handle plant growth stages over time
 local function growPlant(plantId, currentStage)
@@ -107,7 +97,6 @@ end)
 -- 1. Request to open Bench
 lib.callback.register('vtx_weed:server:getBenchState', function(source)
     local src = source
-    checkHourlyLimit() -- Refresh window limit before sending state
 
     -- If someone else is using it, deny access
     if BenchState.inUseBy ~= nil and BenchState.inUseBy ~= src then
@@ -147,13 +136,6 @@ lib.callback.register('vtx_weed:server:startProcessing', function(source)
     
     -- Security Check: Ensure only the locked player can start
     if BenchState.inUseBy ~= src then return false, "Unauthorized" end
-    
-    checkHourlyLimit()
-
-    -- Check if max limits reached
-    if BenchState.hourlyCount >= Config.Bench.MaxProcessesPerHour then
-        return false, "Bench has reached its maximum hourly capacity."
-    end
 
     -- Check Inventory for ALL required items (ox_inventory)
     for _, req in pairs(Config.Bench.Recipe.InputItems) do
@@ -170,7 +152,6 @@ lib.callback.register('vtx_weed:server:startProcessing', function(source)
     
     BenchState.status = 'processing'
     BenchState.finishTime = os.time() + Config.Bench.Recipe.ProcessTime
-    BenchState.hourlyCount = BenchState.hourlyCount + 1
 
     -- Trigger Discord Log
     TriggerEvent('vtx_weed:server:discordLog', 'process_start', src, {})
