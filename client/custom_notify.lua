@@ -5,13 +5,12 @@
 local function SendCustomNotify(title, message, notifyType)
     local nType = notifyType or 'info'
     
-    -- Using ox_lib's default notify. 
-    -- Any global UI pack installed on the server will automatically intercept this!
+    -- Using a hardcoded duration since the config was removed, but you can adjust this as needed
     lib.notify({
         title = title,
         description = message,
         type = nType,
-        duration = Config.Notify.DefaultDuration or 5000
+        duration = 5000 -- Hardcoded duration since config was removed
     })
 end
 
