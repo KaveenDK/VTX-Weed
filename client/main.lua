@@ -198,7 +198,6 @@ local function openBenchUI()
             data = state,
             config = {
                 recipe = Config.Bench.Recipe,
-                limits = { max = Config.Bench.MaxProcessesPerHour },
                 theme = Config.ThemeColor
             }
         })

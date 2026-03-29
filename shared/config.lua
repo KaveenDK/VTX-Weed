@@ -129,10 +129,6 @@ Config.Bench = {
     TargetIcon = "fas fa-box-open",
     TargetLabel = "Use Processing Bench",
 
-    -- Limits and Cooldowns
-    MaxProcessesPerHour = 3, 
-    CooldownWindow = 60 * 60, 
-
     -- Recipe configuration
     Recipe = {
         InputItems = {

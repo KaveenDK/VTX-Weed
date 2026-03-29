@@ -53,7 +53,7 @@ body {
 }
 
 /* ==========================================
-   Header & Info Bar
+   Header
 ========================================= */
 .header {
     display: flex;
@@ -97,27 +97,6 @@ body {
 .icon-btn:hover {
     color: var(--error-color);
     transform: scale(1.1);
-}
-
-.info-bar {
-    background: rgba(20, 151, 228, 0.1);
-    padding: 10px 20px;
-    font-size: 13px;
-    color: var(--text-muted);
-    display: flex;
-    justify-content: space-between;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.info-bar span {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-#limit-count {
-    color: var(--theme-color);
-    font-weight: 600;
 }
 
 /* ==========================================
