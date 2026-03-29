@@ -108,8 +108,8 @@ Config.Crushing = {
     
     CrushTime = 60000, -- 1 minute (60 seconds) to crush 1 batch
     Anim = {
-        dict = "anim@amb@business@weed@weed_inspecting_lo_med_hi@", 
-        clip = "weed_crouch_check_base"
+        dict = "mini@repair", 
+        clip = "fixing_a_ped"
     },
 
     Recipe = {
