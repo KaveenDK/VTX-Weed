@@ -46,25 +46,43 @@ RegisterNetEvent('vtx_weed:server:discordLog', function(action, src, data)
         WebhookURL = Config.Webhooks.Harvest
         Title = "🌿 Weed Harvested"
         Description = string.format("**Action:** Harvested a Weed Plant\n**Plant ID:** %s\n**Received:** %sx %s", data.plantId, data.amount, Config.Plants.HarvestItem)
+        
     elseif action == 'crush' then
-        WebhookURL = Config.Webhooks.Crush -- Updated to use the dedicated Crush webhook
+        WebhookURL = Config.Webhooks.Crush 
         Title = "🔨 Weed Crushed"
         Description = string.format("**Action:** Crushed Weed Leaves\n**Input Used:** %sx %s\n**Received:** %sx %s", Config.Crushing.Recipe.InputAmount, Config.Crushing.Recipe.InputItem, Config.Crushing.Recipe.OutputAmount, Config.Crushing.Recipe.OutputItem)
+        
     elseif action == 'process_start' then
         WebhookURL = Config.Webhooks.Process
         Title = "⚙️ Weed Processing Started"
         
-        -- Dynamically build the input string since there are multiple items now
+        -- Dynamically fetch the selected recipe (Package or Joint)
+        local recipeKey = data.recipeKey
+        local selectedRecipe = Config.Bench.Recipes[recipeKey]
         local inputStr = ""
-        for _, req in pairs(Config.Bench.Recipe.InputItems) do
-            inputStr = inputStr .. string.format("%sx %s\n", req.amount, req.item)
+        
+        if selectedRecipe then
+            for _, req in pairs(selectedRecipe.InputItems) do
+                inputStr = inputStr .. string.format("%sx %s\n", req.amount, req.item)
+            end
         end
         
-        Description = string.format("**Action:** Started Processing Bench\n**Inputs Used:**\n%s", inputStr)
+        Description = string.format("**Action:** Started Processing Bench (%s)\n**Inputs Used:**\n%s", recipeKey or "Unknown", inputStr)
+        
     elseif action == 'process_collect' then
         WebhookURL = Config.Webhooks.Process
-        Title = "📦 Processed Weed Collected"
-        Description = string.format("**Action:** Collected Output from Bench\n**Received:** %sx %s", Config.Bench.Recipe.OutputAmount, Config.Bench.Recipe.OutputItem)
+        Title = "📦 Processed Goods Collected"
+        
+        -- Fetch the specific recipe output
+        local recipeKey = data.recipeKey
+        local selectedRecipe = Config.Bench.Recipes[recipeKey]
+        
+        if selectedRecipe then
+            Description = string.format("**Action:** Collected Output from Bench\n**Received:** %sx %s", selectedRecipe.OutputAmount, selectedRecipe.OutputItem)
+        else
+            Description = "**Action:** Collected Output from Bench\n**Received:** Unknown Item"
+        end
+        
     elseif action == 'exploit' then
         WebhookURL = Config.Webhooks.Exploit
         Title = "⚠️ Possible Exploit Detected"
