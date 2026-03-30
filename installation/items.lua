@@ -43,3 +43,25 @@
             image = 'weed_package.png',
         }
     },
+
+    ['rolling_paper_blue'] = {
+        label = 'Blue Rolling Paper',
+        weight = 1,
+        stack = true,
+        close = true,
+        description = 'A blue rolling paper used for rolling joints.',
+        client = {
+            image = 'rolling_paper_blue.png',
+        }
+    },
+
+    ['joint'] = {
+        label = 'Weed Joint',
+        weight = 1,
+        stack = true,
+        close = true,
+        description = 'A tightly rolled weed joint.',
+        client = {
+            image = 'joint.png',
+        }
+    }

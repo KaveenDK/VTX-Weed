@@ -14,9 +14,10 @@ GlobalState.vtx_weed_plants = PlantStates
 
 -- Bench State: Prevent multiple access and track processing status
 local BenchState = {
-    inUseBy = nil,       -- Player ID currently using the UI
-    status = 'idle',     -- 'idle', 'processing', 'ready'
-    finishTime = 0       -- os.time() when processing finishes
+    inUseBy = nil,           -- Player ID currently using the UI
+    status = 'idle',         -- 'idle', 'processing', 'ready'
+    finishTime = 0,          -- os.time() when processing finishes
+    currentRecipeKey = nil   -- Stores which recipe (e.g., "Package" or "Joint") is being processed
 }
 
 -- ==========================================
@@ -131,14 +132,18 @@ AddEventHandler('playerDropped', function()
 end)
 
 -- 3. Start Processing
-lib.callback.register('vtx_weed:server:startProcessing', function(source)
+lib.callback.register('vtx_weed:server:startProcessing', function(source, recipeKey)
     local src = source
     
     -- Security Check: Ensure only the locked player can start
     if BenchState.inUseBy ~= src then return false, "Unauthorized" end
 
+    -- Verify the requested recipe exists
+    local selectedRecipe = Config.Bench.Recipes[recipeKey]
+    if not selectedRecipe then return false, "Invalid recipe selected." end
+
     -- Check Inventory for ALL required items (ox_inventory)
-    for _, req in pairs(Config.Bench.Recipe.InputItems) do
+    for _, req in pairs(selectedRecipe.InputItems) do
         local hasItem = ox_inventory:Search(src, 'count', req.item)
         if hasItem < req.amount then
             return false, "Not enough " .. req.item .. "."
@@ -146,18 +151,19 @@ lib.callback.register('vtx_weed:server:startProcessing', function(source)
     end
 
     -- Remove ALL required items
-    for _, req in pairs(Config.Bench.Recipe.InputItems) do
+    for _, req in pairs(selectedRecipe.InputItems) do
         ox_inventory:RemoveItem(src, req.item, req.amount)
     end
     
     BenchState.status = 'processing'
-    BenchState.finishTime = os.time() + Config.Bench.Recipe.ProcessTime
+    BenchState.currentRecipeKey = recipeKey -- Save the chosen recipe
+    BenchState.finishTime = os.time() + selectedRecipe.ProcessTime
 
-    -- Trigger Discord Log
-    TriggerEvent('vtx_weed:server:discordLog', 'process_start', src, {})
+    -- Trigger Discord Log (Pass the recipe key to logs so they know what was crafted)
+    TriggerEvent('vtx_weed:server:discordLog', 'process_start', src, { recipeKey = recipeKey })
 
     -- Automatically set to ready when time is up (Server-side safety)
-    SetTimeout(Config.Bench.Recipe.ProcessTime * 1000, function()
+    SetTimeout(selectedRecipe.ProcessTime * 1000, function()
         if BenchState.status == 'processing' then
             BenchState.status = 'ready'
         end
@@ -176,15 +182,19 @@ lib.callback.register('vtx_weed:server:collectOutput', function(source)
         return false, "Processing is not finished yet."
     end
 
-    -- Give output item
-    ox_inventory:AddItem(src, Config.Bench.Recipe.OutputItem, Config.Bench.Recipe.OutputAmount)
+    local finishedRecipe = Config.Bench.Recipes[BenchState.currentRecipeKey]
+    if not finishedRecipe then return false, "Recipe error on collection." end
+
+    -- Give output item based on what was processing
+    ox_inventory:AddItem(src, finishedRecipe.OutputItem, finishedRecipe.OutputAmount)
+
+    -- Trigger Discord Log
+    TriggerEvent('vtx_weed:server:discordLog', 'process_collect', src, { recipeKey = BenchState.currentRecipeKey })
 
     -- Reset Bench State
     BenchState.status = 'idle'
     BenchState.finishTime = 0
-
-    -- Trigger Discord Log
-    TriggerEvent('vtx_weed:server:discordLog', 'process_collect', src, {})
+    BenchState.currentRecipeKey = nil
 
     return true, BenchState
 end)

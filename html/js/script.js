@@ -3,6 +3,8 @@
 // ==========================================
 let currentTotalTime = 0;
 let timerInterval = null;
+let currentRecipeKey = null; // Tracks whether 'Package' or 'Joint' is selected
+let recipesData = {};
 const resourceName = 'vtx_weed';
 
 // ==========================================
@@ -16,32 +18,88 @@ window.addEventListener('message', function(event) {
     }
 });
 
+// Helper function to format raw item names (e.g. "weed_baggy_empty" -> "Weed Baggy Empty")
+function formatItemName(name) {
+    return name.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+}
+
 // ==========================================
 // Main Menu Logic
 // ==========================================
 function openMenu(state, config) {
-    // Set basic config data
-    currentTotalTime = config.recipe.ProcessTime;
+    recipesData = config.recipes;
     
-    // Dynamically set the required item amounts based on the Lua Config array
-    if (config.recipe && config.recipe.InputItems) {
-        // Assuming InputItems[0] is crushed_weed and InputItems[1] is weed_baggy_empty
-        if (config.recipe.InputItems[0]) {
-            document.getElementById('req-amount-1').innerText = `${config.recipe.InputItems[0].amount}x`;
-        }
-        if (config.recipe.InputItems[1]) {
-            document.getElementById('req-amount-2').innerText = `${config.recipe.InputItems[1].amount}x`;
-        }
+    // Generate Tabs dynamically based on Config.Bench.Recipes
+    const tabsContainer = document.getElementById('recipe-tabs');
+    tabsContainer.innerHTML = ''; 
+    
+    let firstKey = null;
+    for (const key in recipesData) {
+        if (!firstKey) firstKey = key;
+        
+        const btn = document.createElement('button');
+        btn.className = 'tab-btn';
+        btn.id = `tab-${key}`;
+        btn.innerText = recipesData[key].Label;
+        btn.onclick = () => selectRecipe(key);
+        tabsContainer.appendChild(btn);
     }
-    
-    // Apply Theme Color to progress bar dynamically
+
+    // Apply Theme Color
     document.documentElement.style.setProperty('--theme-color', config.theme || '#1497e4');
 
     // Show App
     document.getElementById('app').style.display = 'flex';
 
+    // If bench is already processing/ready, lock UI to that specific recipe
+    // Otherwise, default to the first recipe in the list
+    if (state.status === 'processing' || state.status === 'ready') {
+        selectRecipe(state.currentRecipeKey || firstKey);
+        // Disable tab clicking while processing
+        document.querySelectorAll('.tab-btn').forEach(b => b.style.pointerEvents = 'none');
+    } else {
+        selectRecipe(firstKey);
+        document.querySelectorAll('.tab-btn').forEach(b => b.style.pointerEvents = 'auto');
+    }
+
     // Update View based on state
     updateView(state);
+}
+
+function selectRecipe(key) {
+    if (!recipesData[key]) return;
+    
+    currentRecipeKey = key;
+    const recipe = recipesData[key];
+    currentTotalTime = recipe.ProcessTime;
+
+    // Update Tab Button styles
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    const activeTab = document.getElementById(`tab-${key}`);
+    if (activeTab) activeTab.classList.add('active');
+
+    // Update Input Item 1
+    if (recipe.InputItems[0]) {
+        document.getElementById('req-img-1').src = `images/${recipe.InputItems[0].item}.png`;
+        document.getElementById('req-name-1').innerText = formatItemName(recipe.InputItems[0].item);
+        document.getElementById('req-amount-1').innerText = `${recipe.InputItems[0].amount}x`;
+    }
+
+    // Update Input Item 2
+    if (recipe.InputItems[1]) {
+        document.getElementById('req-img-2').src = `images/${recipe.InputItems[1].item}.png`;
+        document.getElementById('req-name-2').innerText = formatItemName(recipe.InputItems[1].item);
+        document.getElementById('req-amount-2').innerText = `${recipe.InputItems[1].amount}x`;
+    }
+
+    // Update Output Item
+    document.getElementById('out-img').src = `images/${recipe.OutputItem}.png`;
+    document.getElementById('out-name').innerText = recipe.Label;
+    document.getElementById('out-amount').innerText = `${recipe.OutputAmount}x`;
+
+    // Update Processing Screen Title
+    const processingTitle = document.getElementById('processing-title');
+    if (processingTitle) processingTitle.innerText = `Processing ${recipe.Label}...`;
 }
 
 function closeMenu() {
@@ -82,7 +140,7 @@ function startTimer(finishTime) {
     const progressFill = document.getElementById('progress-fill');
 
     timerInterval = setInterval(() => {
-        // Calculate remaining seconds (Unix timestamp comparison)
+        // Calculate remaining seconds
         const currentTime = Math.floor(Date.now() / 1000);
         const timeLeft = finishTime - currentTime;
 
@@ -96,10 +154,7 @@ function startTimer(finishTime) {
                 updateView({ status: 'ready' });
             }, 1000);
         } else {
-            // Update Text
             timeDisplay.innerText = `Time Left: ${formatTime(timeLeft)}`;
-            
-            // Update Progress Bar
             const progressPercent = ((currentTotalTime - timeLeft) / currentTotalTime) * 100;
             progressFill.style.width = `${progressPercent}%`;
         }
@@ -118,12 +173,15 @@ function formatTime(seconds) {
 document.getElementById('close-btn').addEventListener('click', closeMenu);
 
 document.getElementById('start-btn').addEventListener('click', function() {
+    // Send the currently selected recipe key to the server
     fetch(`https://${resourceName}/startProcessing`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({})
+        body: JSON.stringify({ recipeKey: currentRecipeKey })
     }).then(resp => resp.json()).then(data => {
         if (data.success) {
+            // Disable tabs so player can't click them while processing
+            document.querySelectorAll('.tab-btn').forEach(b => b.style.pointerEvents = 'none');
             updateView(data.state);
         }
     });
@@ -136,7 +194,7 @@ document.getElementById('collect-btn').addEventListener('click', function() {
         body: JSON.stringify({})
     }).then(resp => resp.json()).then(data => {
         if (data.success) {
-            closeMenu(); // Close UI automatically after collecting
+            closeMenu();
         }
     });
 });

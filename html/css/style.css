@@ -118,7 +118,45 @@ body {
     animation: fadeIn 0.3s ease;
 }
 
-/* Recipe Container */
+/* ==========================================
+   Recipe Selection Tabs
+========================================= */
+.recipe-tabs {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    justify-content: center;
+    margin-bottom: -10px; /* Pulls it slightly closer to the recipe box */
+}
+
+.tab-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-light);
+    color: var(--text-muted);
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+}
+
+.tab-btn.active {
+    background: var(--theme-color);
+    color: #fff;
+    border-color: var(--theme-color);
+    box-shadow: 0 0 10px var(--theme-color-glow);
+}
+
+/* ==========================================
+   Recipe Container
+========================================= */
 .recipe-container {
     display: flex;
     align-items: center;
@@ -128,6 +166,7 @@ body {
     border-radius: 12px;
     width: 100%;
     justify-content: center;
+    min-height: 140px; /* Prevents jumping when swapping images */
 }
 
 .item-box {
@@ -136,6 +175,7 @@ body {
     align-items: center;
     gap: 8px;
     text-align: center;
+    width: 90px; /* Fixed width to prevent layout shifting */
 }
 
 .item-box img {
@@ -143,12 +183,17 @@ body {
     height: 55px;
     object-fit: contain;
     filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5));
+    transition: transform 0.2s ease;
 }
 
 .item-name {
     color: var(--text-main);
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
 }
 
 .item-req {
@@ -175,7 +220,9 @@ body {
     margin-bottom: 25px;
 }
 
-/* Buttons */
+/* ==========================================
+   Buttons
+========================================= */
 .primary-btn {
     width: 100%;
     padding: 15px;
@@ -199,7 +246,9 @@ body {
     animation: pulse 2s infinite;
 }
 
-/* Processing View */
+/* ==========================================
+   Processing View
+========================================= */
 .loader-container {
     text-align: center;
     color: var(--text-main);
@@ -234,7 +283,9 @@ body {
     transition: width 1s linear;
 }
 
-/* Ready View */
+/* ==========================================
+   Ready View
+========================================= */
 .success-container {
     text-align: center;
 }
