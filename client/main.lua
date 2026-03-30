@@ -197,7 +197,7 @@ local function openBenchUI()
             action = "openMenu",
             data = state,
             config = {
-                recipe = Config.Bench.Recipe,
+                recipes = Config.Bench.Recipes, -- Send the array of all available recipes
                 theme = Config.ThemeColor
             }
         })
@@ -245,9 +245,10 @@ RegisterNUICallback('closeUI', function(data, cb)
 end)
 
 RegisterNUICallback('startProcessing', function(data, cb)
-    local success, response = lib.callback.await('vtx_weed:server:startProcessing', false)
+    -- data.recipeKey will contain either "Package" or "Joint" sent from JS
+    local success, response = lib.callback.await('vtx_weed:server:startProcessing', false, data.recipeKey)
     if success then
-        exports['vtx_weed']:SendCustomNotify('Success', 'Weed processing started.', 'success')
+        exports['vtx_weed']:SendCustomNotify('Success', 'Processing started.', 'success')
         cb({ success = true, state = response })
     else
         exports['vtx_weed']:SendCustomNotify('Error', response, 'error')
@@ -258,7 +259,7 @@ end)
 RegisterNUICallback('collectOutput', function(data, cb)
     local success, response = lib.callback.await('vtx_weed:server:collectOutput', false)
     if success then
-        exports['vtx_weed']:SendCustomNotify('Collected', 'You received the processed weed.', 'success')
+        exports['vtx_weed']:SendCustomNotify('Collected', 'You received the processed goods.', 'success')
         cb({ success = true, state = response })
     else
         exports['vtx_weed']:SendCustomNotify('Error', response, 'error')

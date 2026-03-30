@@ -102,7 +102,7 @@ Config.Plants = {
 -- ==========================================
 Config.Crushing = {
     Model = `bkr_prop_coke_table01a`, -- Using a different table to distinguish from packaging
-    Coords = vec4(3805.3018, 4441.8804, 4.2115, 185.6901), -- Change this to where you want the crushing table
+    Coords = vec4(3805.3018, 4441.8804, 4.2115, 185.6901),
     TargetIcon = "fas fa-mortar-pestle",
     TargetLabel = "Crush Weed Leaves",
     
@@ -114,9 +114,9 @@ Config.Crushing = {
 
     Recipe = {
         InputItem = "weed_leaf",
-        InputAmount = 10, -- Takes 10 leaves
+        InputAmount = 10,
         OutputItem = "crushed_weed",
-        OutputAmount = 10 -- Gives 10 crushed weed
+        OutputAmount = 10
     }
 }
 
@@ -129,14 +129,27 @@ Config.Bench = {
     TargetIcon = "fas fa-box-open",
     TargetLabel = "Use Processing Bench",
 
-    -- Recipe configuration
-    Recipe = {
-        InputItems = {
-            { item = "crushed_weed", amount = 50 },
-            { item = "weed_baggy_empty", amount = 1 }
+    -- Available Recipes
+    Recipes = {
+        Package = {
+            Label = "Weed Package",
+            InputItems = {
+                { item = "crushed_weed", amount = 50 },
+                { item = "weed_baggy_empty", amount = 1 }
+            },
+            OutputItem = "weed_package", 
+            OutputAmount = 1,            
+            ProcessTime = 10 * 60 -- 10 minutes       
         },
-        OutputItem = "weed_package", 
-        OutputAmount = 1,            
-        ProcessTime = 10 * 60        
+        Joint = {
+            Label = "Weed Joint",
+            InputItems = {
+                { item = "crushed_weed", amount = 5 },
+                { item = "rolling_paper_blue", amount = 1 }
+            },
+            OutputItem = "joint", -- Assuming this is your joint item name, change if needed
+            OutputAmount = 1,            
+            ProcessTime = 10 * 60 -- 10 minutes      
+        }
     }
 }

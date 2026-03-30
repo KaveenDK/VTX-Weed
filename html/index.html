@@ -32,10 +32,16 @@
 
         <div class="content">
           <div id="idle-view" class="view-section">
+            <div class="recipe-tabs" id="recipe-tabs"></div>
+
             <div class="recipe-container">
               <div class="item-box">
-                <img src="images/crushed_weed.png" alt="Crushed Weed" />
-                <span class="item-name">Crushed Weed</span>
+                <img
+                  id="req-img-1"
+                  src="images/crushed_weed.png"
+                  alt="Input 1"
+                />
+                <span class="item-name" id="req-name-1">Crushed Weed</span>
                 <span class="item-req" id="req-amount-1">50x</span>
               </div>
 
@@ -44,8 +50,12 @@
               </div>
 
               <div class="item-box">
-                <img src="images/weed_baggy_empty.png" alt="Empty Baggy" />
-                <span class="item-name">Empty Baggy</span>
+                <img
+                  id="req-img-2"
+                  src="images/weed_baggy_empty.png"
+                  alt="Input 2"
+                />
+                <span class="item-name" id="req-name-2">Empty Baggy</span>
                 <span class="item-req" id="req-amount-2">1x</span>
               </div>
 
@@ -54,18 +64,19 @@
               </div>
 
               <div class="item-box">
-                <img src="images/weed_package.png" alt="Weed Package" />
-                <span class="item-name">Weed Package</span>
+                <img id="out-img" src="images/weed_package.png" alt="Output" />
+                <span class="item-name" id="out-name">Weed Package</span>
                 <span class="item-req" id="out-amount">1x</span>
               </div>
             </div>
+
             <button id="start-btn" class="primary-btn">Start Processing</button>
           </div>
 
           <div id="processing-view" class="view-section" style="display: none">
             <div class="loader-container">
               <i class="fas fa-cog fa-spin theme-text loader-icon"></i>
-              <h3>Processing Batch...</h3>
+              <h3 id="processing-title">Processing Batch...</h3>
               <p id="time-remaining">Time Left: 00:00</p>
             </div>
             <div class="progress-bar-container">
@@ -77,7 +88,7 @@
             <div class="success-container">
               <i class="fas fa-box-open theme-text success-icon"></i>
               <h3>Batch Ready!</h3>
-              <p>Your processed weed is ready to be collected.</p>
+              <p>Your processed goods are ready to be collected.</p>
             </div>
             <button id="collect-btn" class="primary-btn pulse-btn">
               Collect Output
