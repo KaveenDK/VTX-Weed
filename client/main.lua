@@ -266,3 +266,43 @@ RegisterNUICallback('collectOutput', function(data, cb)
         cb({ success = false })
     end
 end)
+
+-- ==========================================
+-- Usable Items Logic (Joint)
+-- ==========================================
+
+RegisterNetEvent('vtx_weed:client:useJoint', function()
+    -- Start ox_lib progress bar with smoking animation and prop
+    if lib.progressBar({
+        duration = 10000, -- 10 Seconds to smoke
+        label = "Smoking a Joint...",
+        useWhileDead = false,
+        canCancel = true,
+        disable = { car = false, move = false, combat = true },
+        anim = {
+            dict = "amb@world_human_smoking_weed@male@base",
+            clip = "base"
+        },
+        prop = {
+            model = `p_cs_joint_02`,
+            bone = 28422,
+            pos = vec3(0.015, 0.009, 0.003),
+            rot = vec3(55.0, 0.0, 110.0)
+        },
+    }) then
+        -- If successfully finished smoking:
+        
+        -- 1. Relieve Stress (Qbox/QBCore default event for stress)
+        local stressRelief = math.random(20, 30) -- Reduces 20 to 30 stress
+        TriggerServerEvent('hud:server:RelieveStress', stressRelief)
+        
+        -- 2. Play a cool screen effect for 15 seconds
+        AnimpostfxPlay("WeedAlienNotches", 15000, false)
+        
+        exports['vtx_weed']:SendCustomNotify('Relaxed', 'You feel the stress fading away...', 'success')
+    else
+        -- If cancelled (player moved or pressed ESC):
+        TriggerServerEvent('vtx_weed:server:returnJoint')
+        exports['vtx_weed']:SendCustomNotify('Cancelled', 'You put the joint away.', 'error')
+    end
+end)

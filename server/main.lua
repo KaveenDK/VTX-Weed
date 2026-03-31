@@ -198,3 +198,24 @@ lib.callback.register('vtx_weed:server:collectOutput', function(source)
 
     return true, BenchState
 end)
+
+-- ==========================================
+-- Usable Items Logic (Joint)
+-- ==========================================
+
+-- Qbox/QBCore standard usable item registration
+exports.qbx_core:CreateUseableItem('joint', function(source, item)
+    local src = source
+    
+    -- Remove 1 joint from the player's inventory
+    if ox_inventory:RemoveItem(src, 'joint', 1) then
+        -- Trigger client to play animation and effects
+        TriggerClientEvent('vtx_weed:client:useJoint', src)
+    end
+end)
+
+-- Give the joint back if the player cancels the animation
+RegisterNetEvent('vtx_weed:server:returnJoint', function()
+    local src = source
+    ox_inventory:AddItem(src, 'joint', 1)
+end)
