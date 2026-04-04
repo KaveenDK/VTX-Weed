@@ -147,7 +147,7 @@ Config.Bench = {
                 { item = "crushed_weed", amount = 5 },
                 { item = "rolling_paper_blue", amount = 1 }
             },
-            OutputItem = "joint", -- Assuming this is your joint item name, change if needed
+            OutputItem = "joint", 
             OutputAmount = 1,            
             ProcessTime = 10 * 60 -- 10 minutes      
         }
