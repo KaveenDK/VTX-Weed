@@ -6,16 +6,18 @@ local LogoURL = "https://res.cloudinary.com/dkivbxrr1/image/upload/v1774208765/v
 
 -- Convert Hex color (from config) to Decimal for Discord Embeds
 local function hexToDecimal(hex)
+    if not hex then return 1349604 end
     hex = hex:gsub("#", "")
-    return tonumber(hex, 16) or 1349604 -- Default to #1497e4 if conversion fails
+    return tonumber(hex, 16) or 1349604
 end
 
 -- Helper to extract identifiers
 local function getIdentifier(src, idType)
+    if not src then return "Not Found" end
     local num = GetNumPlayerIdentifiers(src)
     for i = 0, num - 1 do
         local id = GetPlayerIdentifier(src, i)
-        if string.find(id, idType) then
+        if id and string.find(id, idType) then
             return id
         end
     end
@@ -28,11 +30,13 @@ RegisterNetEvent('vtx_weed:server:discordLog', function(action, src, data)
     local Description = ""
     local Color = hexToDecimal(Config.ThemeColor)
 
-    -- Fetch Player Data via Qbox
-    local player = exports.qbx_core:GetPlayer(src)
+    -- Fetch Player Data via Qbox safely
     local charName = "Unknown"
-    if player and player.PlayerData and player.PlayerData.charinfo then
-        charName = player.PlayerData.charinfo.firstname .. " " .. player.PlayerData.charinfo.lastname
+    if src then
+        local player = exports.qbx_core:GetPlayer(src)
+        if player and player.PlayerData and player.PlayerData.charinfo then
+            charName = player.PlayerData.charinfo.firstname .. " " .. player.PlayerData.charinfo.lastname
+        end
     end
 
     -- Fetch Identifiers
@@ -41,11 +45,14 @@ RegisterNetEvent('vtx_weed:server:discordLog', function(action, src, data)
     local discordMention = discordId ~= "Not Found" and ("<@" .. discordId .. ">") or "Not Linked"
     local steamId = getIdentifier(src, "steam:")
 
+    -- Fallback safety for data table
+    data = data or {}
+
     -- Determine Log Type
     if action == 'harvest' then
         WebhookURL = Config.Webhooks.Harvest
         Title = "🌿 Weed Harvested"
-        Description = string.format("**Action:** Harvested a Weed Plant\n**Plant ID:** %s\n**Received:** %sx %s", data.plantId, data.amount, Config.Plants.HarvestItem)
+        Description = string.format("**Action:** Harvested a Weed Plant\n**Plant ID:** %s\n**Received:** %sx %s", tostring(data.plantId), tostring(data.amount), Config.Plants.HarvestItem)
         
     elseif action == 'crush' then
         WebhookURL = Config.Webhooks.Crush 
@@ -56,15 +63,20 @@ RegisterNetEvent('vtx_weed:server:discordLog', function(action, src, data)
         WebhookURL = Config.Webhooks.Process
         Title = "⚙️ Weed Processing Started"
         
-        -- Dynamically fetch the selected recipe (Package or Joint)
+        -- Safely fetch the selected recipe
         local recipeKey = data.recipeKey
-        local selectedRecipe = Config.Bench.Recipes[recipeKey]
-        local inputStr = ""
+        local selectedRecipe = nil
+        if recipeKey and Config.Bench.Recipes then
+            selectedRecipe = Config.Bench.Recipes[recipeKey]
+        end
         
-        if selectedRecipe then
+        local inputStr = ""
+        if selectedRecipe and selectedRecipe.InputItems then
             for _, req in pairs(selectedRecipe.InputItems) do
-                inputStr = inputStr .. string.format("%sx %s\n", req.amount, req.item)
+                inputStr = inputStr .. string.format("%sx %s\n", tostring(req.amount), tostring(req.item))
             end
+        else
+            inputStr = "Unknown Inputs"
         end
         
         Description = string.format("**Action:** Started Processing Bench (%s)\n**Inputs Used:**\n%s", recipeKey or "Unknown", inputStr)
@@ -73,14 +85,17 @@ RegisterNetEvent('vtx_weed:server:discordLog', function(action, src, data)
         WebhookURL = Config.Webhooks.Process
         Title = "📦 Processed Goods Collected"
         
-        -- Fetch the specific recipe output
+        -- Safely fetch the selected recipe
         local recipeKey = data.recipeKey
-        local selectedRecipe = Config.Bench.Recipes[recipeKey]
+        local selectedRecipe = nil
+        if recipeKey and Config.Bench.Recipes then
+            selectedRecipe = Config.Bench.Recipes[recipeKey]
+        end
         
         if selectedRecipe then
-            Description = string.format("**Action:** Collected Output from Bench\n**Received:** %sx %s", selectedRecipe.OutputAmount, selectedRecipe.OutputItem)
+            Description = string.format("**Action:** Collected Output from Bench\n**Received:** %sx %s", tostring(selectedRecipe.OutputAmount), tostring(selectedRecipe.OutputItem))
         else
-            Description = "**Action:** Collected Output from Bench\n**Received:** Unknown Item"
+            Description = string.format("**Action:** Collected Output from Bench\n**Received:** Unknown Item (Recipe: %s)", tostring(recipeKey))
         end
         
     elseif action == 'exploit' then
@@ -90,7 +105,7 @@ RegisterNetEvent('vtx_weed:server:discordLog', function(action, src, data)
         Color = 16711680 -- Red color for exploits
     end
 
-    if WebhookURL == nil or WebhookURL == "" then return end
+    if not WebhookURL or WebhookURL == "" then return end
 
     -- Prepare Footer Data
     local currentDate = os.date("%Y-%m-%d %H:%M:%S")
